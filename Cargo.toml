@@ -1,0 +1,87 @@
+[package]
+name = "lilctx"
+version = "0.2.0"
+edition = "2021"
+description = "Local context server: embeds files, exposes them to Claude Code via MCP."
+
+[dependencies]
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+
+# Async runtime + HTTP
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+futures = "0.3"
+
+# Config / serde
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# File walking + watching
+ignore = "0.4"
+notify = "6"
+
+# Embedded vector store
+lancedb = "0.10"
+arrow-array = "52"
+arrow-schema = "52"
+# arrow-arith 52.x calls `Datelike::quarter` via its own `ChronoDateExt` shim;
+# chrono 0.4.40 added an inherent `quarter` that makes the call ambiguous and
+# breaks compilation. Pin to <0.4.40 until lancedb/arrow are bumped to 53+.
+chrono = "=0.4.39"
+
+# MCP server SDK
+rmcp = { version = "0.16", features = ["server", "transport-io", "macros"] }
+schemars = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Misc
+anyhow = "1"
+sha2 = "0.10"
+hex = "0.4"
+dirs = "5"
+async-trait = "0.1"
+
+[dev-dependencies]
+# Subprocess-driven CLI tests (binary as the boundary).
+assert_cmd = "2"
+predicates = "3"
+# Per-test tmp data dirs / config files / source trees.
+tempfile = "3"
+# Local fake of the OpenAI-compatible /v1/embeddings endpoint.
+wiremock = "0.6"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+# Lints are scoped to real footguns rather than the full pedantic/nursery groups
+# (which are noisy on idiomatic code and collect false-positive churn). Tighten
+# selectively as the codebase matures.
+[lints.rust]
+unsafe_code = "forbid"
+unused_lifetimes = "warn"
+unused_qualifications = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+# Keep clippy::all + correctness/suspicious at default (warn) -- the real bans:
+dbg_macro = "deny"
+print_stdout = "deny"
+todo = "warn"
+unimplemented = "warn"
+panic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+# A handful of pedantic-but-genuinely-useful lints, opted in individually.
+explicit_iter_loop = "warn"
+needless_pass_by_value = "warn"
+semicolon_if_nothing_returned = "warn"
+uninlined_format_args = "warn"
+# Threshold lives in clippy.toml (cognitive-complexity-threshold).
+cognitive_complexity = "warn"

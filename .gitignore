@@ -1,0 +1,20 @@
+/target
+**/*.rs.bk
+Cargo.lock.bak
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# lilctx local state
+.lilctx/
+*.lance
+.bully/
+
+# Local agent / editor state
+.claude/

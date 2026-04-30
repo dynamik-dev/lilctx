@@ -1,0 +1,61 @@
+schema_version: 1
+
+skip:
+  - "target/**"
+  - ".bully/**"
+  - ".git/**"
+  - ".idea/**"
+  - ".vscode/**"
+
+rules:
+  rustfmt-check:
+    description: "Code must be formatted with rustfmt (project's rustfmt.toml)."
+    engine: script
+    scope: ["*.rs"]
+    severity: warning
+    script: "rustfmt --check --edition 2021 {file}"
+
+  cargo-check:
+    description: >
+      Code must typecheck. Runs `cargo check` on every .rs edit -- fast on
+      incremental builds. Full clippy is enforced separately by .pre-commit
+      hooks and CI; running clippy per-edit times out the 30s bully budget on
+      cold-cache compiles, so we keep it out of the per-edit loop.
+    engine: script
+    scope: ["*.rs"]
+    severity: error
+    script: "cargo check --quiet --all-targets --all-features"
+
+  no-stdout-writes:
+    description: >
+      The MCP stdio transport owns stdout for JSON-RPC framing. Anything writing
+      to stdout from MCP-server code (println!, print!, std::io::stdout) corrupts
+      the protocol stream. Logs MUST go to stderr (eprintln!, tracing).
+      EXCLUDED: src/cli.rs (CLI subcommands like `search`/`status` print to the
+      terminal -- that path never runs under MCP serve). The grep ignores `//`
+      comments to avoid false positives on documentation.
+    engine: script
+    scope: ["*.rs"]
+    severity: error
+    script: "case '{file}' in *src/cli.rs) exit 0;; esac; ! grep -nE '^[[:space:]]*[^/[:space:]].*(\\bprintln!|\\bprint!|std::io::stdout|io::stdout\\()' {file}"
+
+  clippy-lints-aligned:
+    description: >
+      Suggestions and new code must respect the lint configuration declared at
+      the crate root (Cargo.toml [lints]). This crate forbids unsafe, denies
+      dbg_macro and print_stdout, and warns on unwrap/expect/panic/todo. Do not
+      propose code that contradicts those denials, and do not silently `#[allow]`
+      a denied lint to make code compile -- fix the underlying issue.
+    engine: semantic
+    scope: ["*.rs"]
+    severity: warning
+
+  no-panic-in-cli-arg-parsing:
+    description: >
+      CLI argument parsing must never panic on bad user input. Use clap's
+      Result-returning parsers (`try_parse`) or print a friendly error to stderr
+      with a non-zero exit code. Bad flags are a user mistake, not a programmer
+      bug, and the program should say so in English rather than unwinding.
+    engine: semantic
+    scope: ["src/main.rs", "src/cli.rs", "src/bin/*.rs"]
+    severity: error
