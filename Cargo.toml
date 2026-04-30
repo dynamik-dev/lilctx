@@ -29,7 +29,7 @@ arrow-schema = "52"
 # arrow-arith 52.x calls `Datelike::quarter` via its own `ChronoDateExt` shim;
 # chrono 0.4.40 added an inherent `quarter` that makes the call ambiguous and
 # breaks compilation. Pin to <0.4.40 until lancedb/arrow are bumped to 53+.
-chrono = "=0.4.39"
+chrono = "=0.4.44"
 
 # MCP server SDK
 rmcp = { version = "0.16", features = ["server", "transport-io", "macros"] }
