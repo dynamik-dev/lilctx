@@ -20,7 +20,7 @@ toml = "0.8"
 
 # File walking + watching
 ignore = "0.4"
-notify = "6"
+notify = "8"
 
 # Embedded vector store
 lancedb = "0.10"
