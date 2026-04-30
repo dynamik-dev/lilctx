@@ -32,7 +32,7 @@ arrow-schema = "52"
 chrono = "=0.4.39"
 
 # MCP server SDK
-rmcp = { version = "0.16", features = ["server", "transport-io", "macros"] }
+rmcp = { version = "1.5", features = ["server", "transport-io", "macros"] }
 schemars = "0.8"
 
 # Logging
