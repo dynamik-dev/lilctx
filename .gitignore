@@ -16,5 +16,8 @@ Thumbs.db
 *.lance
 .bully/
 
-# Local agent / editor state
-.claude/
+# Local Claude Code state -- .claude/skills/ is shareable and tracked.
+.claude/agent-memory/
+.claude/agents/
+.claude/projects/
+.claude/settings.local.json
