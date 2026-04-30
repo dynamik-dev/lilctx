@@ -55,6 +55,23 @@ base_url = "https://openrouter.ai/api/v1"
 | `batch_size`  | int    | Number of texts per HTTP request. Higher = fewer round-trips but bigger blast radius on failure. |
 | `base_url`    | string | OpenAI-compatible `/v1` base URL (without the trailing `/embeddings`). Defaults to OpenRouter. |
 
+### Secrets file: `~/.lilctx.json`
+
+Any of the env vars below can also live in `~/.lilctx.json`, a flat JSON
+object of `string -> string`:
+
+```json
+{
+  "LILCTX_OPENROUTER_API_KEY": "sk-or-...",
+  "RUST_LOG": "lilctx=info"
+}
+```
+
+`lilctx` injects every entry into its process environment at startup. Real
+env vars (shell exports, MCP-config `env` blocks) always take precedence —
+the file is the fallback, not the override. Use it so the API key follows
+the binary regardless of where it's spawned from. `chmod 600` it.
+
 ### Env overrides
 
 These env vars override fields without editing the file. Useful for one-shot

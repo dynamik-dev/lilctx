@@ -34,8 +34,24 @@ install, no daemon to manage.
 
 ## 2. Get an embeddings API key
 
-The default provider is [OpenRouter](https://openrouter.ai). Create a key, then
-export it:
+The default provider is [OpenRouter](https://openrouter.ai). The fastest way
+to make `lilctx` see your key is to drop it in `~/.lilctx.json`:
+
+```json
+{
+  "LILCTX_OPENROUTER_API_KEY": "sk-or-..."
+}
+```
+
+`lilctx` reads that file at startup and injects every entry into its process
+environment, so the same value is visible whether you run `lilctx` from a
+shell or whether Claude Code spawns it. Real env vars (shell exports, the
+MCP `env` block) always win, so the file is a fallback rather than an
+override. **Treat the file like an SSH key** — `chmod 600 ~/.lilctx.json` is
+a good idea.
+
+If you'd rather not use a file, exporting the same vars in your shell works
+identically:
 
 ```bash
 export LILCTX_OPENROUTER_API_KEY=sk-or-...
@@ -45,10 +61,11 @@ If you'd rather use OpenAI (or any other OpenAI-compatible `/v1/embeddings`
 endpoint — Together, a local Ollama gateway, etc.), use the OpenAI-compatible
 mode instead:
 
-```bash
-export LILCTX_OPENAI_API_KEY=sk-...
-# Optional. Defaults to https://api.openai.com/v1.
-export LILCTX_OPENAI_BASE_URL=https://my-proxy.example/v1
+```json
+{
+  "LILCTX_OPENAI_API_KEY": "sk-...",
+  "LILCTX_OPENAI_BASE_URL": "https://my-proxy.example/v1"
+}
 ```
 
 `LILCTX_OPENROUTER_API_KEY` and `LILCTX_OPENAI_API_KEY` are mutually

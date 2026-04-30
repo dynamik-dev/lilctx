@@ -74,6 +74,39 @@ batch_size = 32
 base_url = "https://openrouter.ai/api/v1"
 "#;
 
+/// Loads `~/.lilctx.json` (if it exists) into the process environment.
+///
+/// The file is a flat JSON object mapping env var names to string values, e.g.
+/// `{"LILCTX_OPENROUTER_API_KEY": "sk-or-..."}`. A variable already set in the
+/// environment is left alone, so shell exports always win and this file is a
+/// fallback, not an override.
+///
+/// Call from the very top of `main` before any other env-reading code runs.
+pub(crate) fn load_secrets_into_env() -> Result<()> {
+    let Some(home) = dirs::home_dir() else {
+        return Ok(());
+    };
+    let path = home.join(".lilctx.json");
+    if !path.exists() {
+        return Ok(());
+    }
+    let raw = std::fs::read_to_string(&path)
+        .with_context(|| format!("reading {}", path.display()))?;
+    let map: std::collections::HashMap<String, String> =
+        serde_json::from_str(&raw).with_context(|| {
+            format!(
+                "{} must be a flat JSON object of string -> string",
+                path.display()
+            )
+        })?;
+    for (k, v) in map {
+        if std::env::var_os(&k).is_none() {
+            std::env::set_var(&k, v);
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn default_config_path() -> Result<PathBuf> {
     let dir = dirs::config_dir()
         .ok_or_else(|| anyhow!("could not resolve config dir; pass --config explicitly"))?
